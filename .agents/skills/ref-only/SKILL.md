@@ -13,7 +13,6 @@ metadata:
 Use this skill when:
 - You need answers strictly grounded in specific documentation
 - You want to prevent hallucinations or external knowledge injection
-- You're building a knowledge-limited system
 - You need citations to source documents
 - You want to maintain consistency with canonical documentation
 

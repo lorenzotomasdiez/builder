@@ -13,15 +13,22 @@ Framework for agent-first software development. Copy into any project to enable 
 ```
 builder/
 ├── AGENTS.md              # This file - entry point for agents
+├── TODO.md                # Implementation plan for Build-Infr
 ├── .agents/               # Skills and agent configuration
 │   └── skills/            # Reusable agent skills
 ├── docs/                  # Knowledge base (system of record)
 │   ├── design-docs/       # Architecture, core beliefs, decisions
 │   ├── exec-plans/        # Active and completed work plans
 │   ├── product-specs/     # Feature specifications
+│   │   └── build-infra-prd.md  # Build-Infr workflow PRD
 │   └── references/        # External documentation for grounding
+│       ├── build-infra-feature-generation.md
+│       └── build-infra-template-variables.md
 ├── templates/             # Scaffolds for new projects
-└── extensions/            # Optional extensions (pi-specific)
+│   └── infra/             # Infrastructure templates
+├── extensions/            # Pi extensions
+│   └── extensions-examples/  # Reference implementations
+└── lib/                   # Core libraries for Build-Infr
 ```
 
 ## Core Beliefs
