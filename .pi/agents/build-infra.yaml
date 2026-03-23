@@ -1,0 +1,5 @@
+build-infra:
+  - infra-initializer
+  - infra-planner
+  - infra-builder
+  - infra-tester

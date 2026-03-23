@@ -25,3 +25,15 @@ focus:
 # Run pi with subagent-widget extension
 subagent:
   pi -e extensions/subagent-widget.ts
+
+# Run pi with build-infra extension (infrastructure generation)
+build-infra:
+  pi -e extensions/build-infra.ts
+
+# Scaffold build-infra toolkit to target directory
+scaffold-infra target:
+  @./scripts/scaffold-build-infra "{{target}}"
+
+# Remove build-infra toolkit from target directory
+clean-infra target:
+  @./scripts/clean-build-infra "{{target}}"

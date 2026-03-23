@@ -1,0 +1,32 @@
+name: Deploy Staging
+
+on:
+  push:
+    branches: [testing]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to staging
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          script: |
+            cd /var/www/{{PROJECT_NAME}}
+            ./scripts/deploy.sh staging
+
+      - name: Health check
+        run: |
+          curl -f https://staging.{{DOMAIN}}/health || exit 1
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "Staging deployment failed"
+          exit 1

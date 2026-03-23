@@ -903,48 +903,78 @@ project/
 └── detected-stack.json           # Detected stack info
 ```
 
-### 13.2 Builder Framework Files
+### 13.2 Builder Framework Files (Toolkit Source)
+
+These files live in the builder repository and are copied to target projects:
 
 ```
 builder/
 ├── .pi/
-│   ├── agents/
-│   │   ├── initializer.md
-│   │   ├── planner.md
-│   │   ├── builder.md
-│   │   ├── tester.md
-│   │   └── build-infra.yaml
-│   └── agent-sessions/
-│       ├── initializer.json
-│       ├── planner.json
-│       ├── builder.json
-│       └── tester.json
+│   └── agents/
+│       ├── infra-initializer.md    # Stack detection, feature list generation
+│       ├── infra-planner.md        # Implementation planning
+│       ├── infra-builder.md        # Feature implementation
+│       ├── infra-tester.md         # End-to-end verification
+│       └── build-infra.yaml        # Team definition (agent order)
 ├── extensions/
-│   └── build-infra.ts
-├── templates/
-│   └── infra/
-│       ├── docker/
-│       ├── compose/
-│       ├── nginx/
-│       ├── scripts/
-│       ├── github/
-│       ├── python/
-│       └── env/
-├── schemas/
-│   ├── feature-list.json
-│   ├── infra-spec.json
-│   └── progress.json
-├── lib/
-│   ├── feature-generator.ts
-│   ├── template-engine.ts
-│   ├── orchestrator.ts
-│   └── user-interaction.ts
-└── docs/
+│   └── build-infra.ts              # Orchestrator extension (dispatch_agent tool)
+└── templates/
     └── infra/
-        ├── feature-generation.md
-        ├── template-variables.md
-        └── troubleshooting.md
+        ├── docker/
+        │   ├── Dockerfile.fastapi
+        │   ├── Dockerfile.celery
+        │   ├── Dockerfile.astro-ssr
+        │   ├── Dockerfile.astro-ssg
+        │   ├── Dockerfile.nginx
+        │   └── .dockerignore
+        ├── compose/
+        │   ├── docker-compose.dev.yml
+        │   ├── docker-compose.staging.yml
+        │   └── docker-compose.prod.yml
+        ├── nginx/
+        │   ├── nginx.dev.conf
+        │   ├── nginx.staging.conf
+        │   └── nginx.prod.conf
+        ├── scripts/
+        │   ├── deploy.sh
+        │   ├── backup.sh
+        │   ├── rollback.sh
+        │   ├── health-check.sh
+        │   └── setup-droplet.sh
+        ├── github/
+        │   ├── ci.yml
+        │   ├── deploy-staging.yml
+        │   └── deploy-prod.yml
+        ├── python/
+        │   ├── pytest.ini
+        │   ├── conftest.py
+        │   ├── alembic.ini
+        │   └── alembic/
+        │       ├── env.py
+        │       ├── script.py.mako
+        │       └── versions/.gitkeep
+        └── env/
+            ├── .env.example
+            └── .env.production.template
 ```
+
+### 13.3 Usage
+
+Copy the toolkit to your project, then run:
+
+```bash
+# In your project directory
+pi -e extensions/build-infra.ts
+
+# Or use justfile
+just build-infra
+```
+
+The orchestrator will:
+1. Load agents from `.pi/agents/infra-*.md`
+2. Dispatch to each agent in sequence (initializer → planner → builder → tester)
+3. Track progress via `progress.md` and `feature-list.json`
+4. Generate infrastructure files from templates
 
 ---
 
