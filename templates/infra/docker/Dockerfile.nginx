@@ -1,0 +1,25 @@
+# Nginx Dockerfile
+# Reverse proxy for API and frontend
+
+FROM nginx:alpine
+
+# Remove default nginx config
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Copy custom configuration
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
+COPY nginx/conf.d/ /etc/nginx/conf.d/
+
+# Create log directory
+RUN mkdir -p /var/log/nginx && \
+    chown -R nginx:nginx /var/log/nginx
+
+# Expose ports
+EXPOSE {{NGINX_PORT}} {{NGINX_PORT_SSL}}
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:{{NGINX_PORT}}/health || exit 1
+
+# Run nginx
+CMD ["nginx", "-g", "daemon off;"]

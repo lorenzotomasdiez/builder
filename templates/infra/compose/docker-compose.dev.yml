@@ -1,0 +1,100 @@
+# Development Docker Compose
+# Local development environment with hot reload
+
+version: "3.8"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    ports:
+      - "{{API_PORT}}:{{API_PORT}}"
+    environment:
+      - DATABASE_URL=postgresql://{{POSTGRES_USER}}:{{POSTGRES_PASSWORD}}@postgres:{{POSTGRES_PORT}}/{{POSTGRES_DB}}
+      - REDIS_URL=redis://redis:{{REDIS_PORT}}/0
+      - DEBUG=true
+    volumes:
+      - .:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - {{PROJECT_NAME}}-network
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+      target: builder
+    environment:
+      - DATABASE_URL=postgresql://{{POSTGRES_USER}}:{{POSTGRES_PASSWORD}}@postgres:{{POSTGRES_PORT}}/{{POSTGRES_DB}}
+      - REDIS_URL=redis://redis:{{REDIS_PORT}}/0
+      - DEBUG=true
+    volumes:
+      - .:/app
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - {{PROJECT_NAME}}-network
+
+  postgres:
+    image: postgres:{{POSTGRES_VERSION}}-alpine
+    environment:
+      - POSTGRES_USER={{POSTGRES_USER}}
+      - POSTGRES_PASSWORD={{POSTGRES_PASSWORD}}
+      - POSTGRES_DB={{POSTGRES_DB}}
+    ports:
+      - "{{POSTGRES_PORT}}:{{POSTGRES_PORT}}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U {{POSTGRES_USER}} -d {{POSTGRES_DB}}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - {{PROJECT_NAME}}-network
+
+  redis:
+    image: redis:{{REDIS_VERSION}}-alpine
+    ports:
+      - "{{REDIS_PORT}}:{{REDIS_PORT}}"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - {{PROJECT_NAME}}-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      target: deps
+    ports:
+      - "{{FRONTEND_PORT}}:{{FRONTEND_PORT}}"
+    environment:
+      - API_URL=http://api:{{API_PORT}}
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - api
+    networks:
+      - {{PROJECT_NAME}}-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  {{PROJECT_NAME}}-network:
+    driver: bridge

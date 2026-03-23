@@ -1,0 +1,57 @@
+#!/bin/bash
+# Remove Build-Infra Toolkit
+# Removes the build-infra toolkit files from a target project directory
+
+set -e
+
+TARGET="${1:-.}"
+
+if [ ! -d "$TARGET" ]; then
+    echo "Error: Directory does not exist: $TARGET"
+    exit 1
+fi
+
+echo "Removing build-infra toolkit from: $TARGET"
+
+# Remove agent definitions
+rm -f "$TARGET/.pi/agents/build-infra.yaml"
+rm -f "$TARGET/.pi/agents/infra-initializer.md"
+rm -f "$TARGET/.pi/agents/infra-planner.md"
+rm -f "$TARGET/.pi/agents/infra-builder.md"
+rm -f "$TARGET/.pi/agents/infra-tester.md"
+
+# Remove extension
+rm -f "$TARGET/extensions/build-infra.ts"
+
+# Remove templates
+rm -rf "$TARGET/templates/infra/docker"
+rm -rf "$TARGET/templates/infra/compose"
+rm -rf "$TARGET/templates/infra/nginx"
+rm -rf "$TARGET/templates/infra/scripts"
+rm -rf "$TARGET/templates/infra/github"
+rm -rf "$TARGET/templates/infra/python"
+rm -rf "$TARGET/templates/infra/env"
+
+# Remove templates/infra if empty
+rmdir "$TARGET/templates/infra" 2>/dev/null || true
+rmdir "$TARGET/templates" 2>/dev/null || true
+
+# Remove .pi/agents if empty
+rmdir "$TARGET/.pi/agents" 2>/dev/null || true
+rmdir "$TARGET/.pi" 2>/dev/null || true
+
+# Remove extensions if empty
+rmdir "$TARGET/extensions" 2>/dev/null || true
+
+# Remove generated artifacts (if any)
+rm -f "$TARGET/progress.md"
+rm -f "$TARGET/feature-list.json"
+rm -f "$TARGET/detected-stack.json"
+rm -f "$TARGET/infra-spec.md"
+rm -f "$TARGET/infra-plan.md"
+
+# Remove agent sessions (if any)
+rm -rf "$TARGET/.pi/agent-sessions" 2>/dev/null || true
+
+echo ""
+echo "Done! Build-infra toolkit removed from: $TARGET"

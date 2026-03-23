@@ -1,0 +1,86 @@
+#!/bin/bash
+# Scaffold Build-Infra Toolkit
+# Copies the build-infra toolkit to a target project directory
+
+set -e
+
+TARGET="${1:-.}"
+
+if [ ! -d "$TARGET" ]; then
+    echo "Creating directory: $TARGET"
+    mkdir -p "$TARGET"
+fi
+
+echo "Scaffolding build-infra toolkit to: $TARGET"
+
+# Create directory structure
+mkdir -p "$TARGET/.pi/agents"
+mkdir -p "$TARGET/extensions"
+mkdir -p "$TARGET/templates/infra/docker"
+mkdir -p "$TARGET/templates/infra/compose"
+mkdir -p "$TARGET/templates/infra/nginx"
+mkdir -p "$TARGET/templates/infra/scripts"
+mkdir -p "$TARGET/templates/infra/github"
+mkdir -p "$TARGET/templates/infra/python/alembic/versions"
+mkdir -p "$TARGET/templates/infra/env"
+
+# Copy agent definitions
+cp .pi/agents/build-infra.yaml "$TARGET/.pi/agents/"
+cp .pi/agents/infra-initializer.md "$TARGET/.pi/agents/"
+cp .pi/agents/infra-planner.md "$TARGET/.pi/agents/"
+cp .pi/agents/infra-builder.md "$TARGET/.pi/agents/"
+cp .pi/agents/infra-tester.md "$TARGET/.pi/agents/"
+
+# Copy extension
+cp extensions/build-infra.ts "$TARGET/extensions/"
+
+# Copy templates
+cp templates/infra/docker/Dockerfile.fastapi "$TARGET/templates/infra/docker/"
+cp templates/infra/docker/Dockerfile.celery "$TARGET/templates/infra/docker/"
+cp templates/infra/docker/Dockerfile.astro-ssr "$TARGET/templates/infra/docker/"
+cp templates/infra/docker/Dockerfile.astro-ssg "$TARGET/templates/infra/docker/"
+cp templates/infra/docker/Dockerfile.nginx "$TARGET/templates/infra/docker/"
+cp templates/infra/docker/.dockerignore "$TARGET/templates/infra/docker/"
+
+cp templates/infra/compose/docker-compose.dev.yml "$TARGET/templates/infra/compose/"
+cp templates/infra/compose/docker-compose.staging.yml "$TARGET/templates/infra/compose/"
+cp templates/infra/compose/docker-compose.prod.yml "$TARGET/templates/infra/compose/"
+
+cp templates/infra/nginx/nginx.dev.conf "$TARGET/templates/infra/nginx/"
+cp templates/infra/nginx/nginx.staging.conf "$TARGET/templates/infra/nginx/"
+cp templates/infra/nginx/nginx.prod.conf "$TARGET/templates/infra/nginx/"
+
+cp templates/infra/scripts/deploy.sh "$TARGET/templates/infra/scripts/"
+cp templates/infra/scripts/backup.sh "$TARGET/templates/infra/scripts/"
+cp templates/infra/scripts/rollback.sh "$TARGET/templates/infra/scripts/"
+cp templates/infra/scripts/health-check.sh "$TARGET/templates/infra/scripts/"
+cp templates/infra/scripts/setup-droplet.sh "$TARGET/templates/infra/scripts/"
+
+cp templates/infra/github/ci.yml "$TARGET/templates/infra/github/"
+cp templates/infra/github/deploy-staging.yml "$TARGET/templates/infra/github/"
+cp templates/infra/github/deploy-prod.yml "$TARGET/templates/infra/github/"
+
+cp templates/infra/python/pytest.ini "$TARGET/templates/infra/python/"
+cp templates/infra/python/conftest.py "$TARGET/templates/infra/python/"
+cp templates/infra/python/alembic.ini "$TARGET/templates/infra/python/"
+cp templates/infra/python/alembic/env.py "$TARGET/templates/infra/python/alembic/"
+cp templates/infra/python/alembic/script.py.mako "$TARGET/templates/infra/python/alembic/"
+cp templates/infra/python/alembic/versions/.gitkeep "$TARGET/templates/infra/python/alembic/versions/"
+
+cp templates/infra/env/.env.example "$TARGET/templates/infra/env/"
+cp templates/infra/env/.env.production.template "$TARGET/templates/infra/env/"
+
+# Make scripts executable
+chmod +x "$TARGET/templates/infra/scripts/"*.sh
+
+echo ""
+echo "Done! Build-infra toolkit scaffolded to: $TARGET"
+echo ""
+echo "Files copied:"
+echo "  .pi/agents/          (5 files)"
+echo "  extensions/          (1 file)"
+echo "  templates/infra/     (all templates)"
+echo ""
+echo "To use:"
+echo "  cd $TARGET"
+echo "  pi -e extensions/build-infra.ts"

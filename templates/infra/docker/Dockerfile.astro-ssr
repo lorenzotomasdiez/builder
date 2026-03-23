@@ -1,0 +1,51 @@
+# Astro SSR Dockerfile
+# Multi-stage build for server-side rendering
+
+# Dependencies stage
+FROM node:{{NODE_VERSION}}-alpine as deps
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json* ./
+
+# Install dependencies
+RUN npm ci
+
+# Build stage
+FROM node:{{NODE_VERSION}}-alpine as builder
+
+WORKDIR /app
+
+# Copy dependencies
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Build application
+RUN npm run build
+
+# Production stage
+FROM node:{{NODE_VERSION}}-alpine
+
+WORKDIR /app
+
+# Copy built application
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./
+
+# Create non-root user
+RUN addgroup -g 1000 -S astro && \
+    adduser -S astro -u 1000 -G astro && \
+    chown -R astro:astro /app
+USER astro
+
+# Expose port
+EXPOSE {{FRONTEND_PORT}}
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:{{FRONTEND_PORT}}/ || exit 1
+
+# Run application
+CMD ["node", "./dist/server/entry.mjs"]

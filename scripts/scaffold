@@ -1,0 +1,65 @@
+#!/bin/bash
+# Scaffold - Copy Builder framework to a new or existing project
+
+set -e
+
+TARGET=${1:-.}
+
+echo "Scaffolding Builder framework to: $TARGET"
+
+# Create directories
+mkdir -p "$TARGET/.agents/skills"
+mkdir -p "$TARGET/docs/design-docs"
+mkdir -p "$TARGET/docs/exec-plans/active"
+mkdir -p "$TARGET/docs/exec-plans/completed"
+mkdir -p "$TARGET/docs/product-specs"
+mkdir -p "$TARGET/docs/references"
+
+# Get script directory (Builder root)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# Copy AGENTS.md
+if [ ! -f "$TARGET/AGENTS.md" ]; then
+    cp "$SCRIPT_DIR/templates/AGENTS.md" "$TARGET/AGENTS.md"
+    echo "  ✓ AGENTS.md"
+else
+    echo "  ○ AGENTS.md (exists, skipped)"
+fi
+
+# Copy core docs
+cp "$SCRIPT_DIR/templates/core-beliefs.md" "$TARGET/docs/design-docs/core-beliefs.md"
+echo "  ✓ docs/design-docs/core-beliefs.md"
+
+cp "$SCRIPT_DIR/docs/design-docs/architecture.md" "$TARGET/docs/design-docs/architecture.md"
+echo "  ✓ docs/design-docs/architecture.md"
+
+cp "$SCRIPT_DIR/docs/design-docs/index.md" "$TARGET/docs/design-docs/index.md"
+echo "  ✓ docs/design-docs/index.md"
+
+cp "$SCRIPT_DIR/docs/exec-plans/tech-debt-tracker.md" "$TARGET/docs/exec-plans/tech-debt-tracker.md"
+echo "  ✓ docs/exec-plans/tech-debt-tracker.md"
+
+# Copy skills
+cp -r "$SCRIPT_DIR/.agents/skills/smart-commit" "$TARGET/.agents/skills/" 2>/dev/null || true
+echo "  ✓ .agents/skills/smart-commit"
+
+cp -r "$SCRIPT_DIR/.agents/skills/ref-only" "$TARGET/.agents/skills/" 2>/dev/null || true
+echo "  ✓ .agents/skills/ref-only"
+
+# Copy justfile commands (append if exists)
+if [ -f "$TARGET/justfile" ]; then
+    echo "" >> "$TARGET/justfile"
+    echo "# Builder commands" >> "$TARGET/justfile"
+    cat "$SCRIPT_DIR/justfile" | grep -A1 "^validate\|^scaffold\|^clean" >> "$TARGET/justfile" 2>/dev/null || true
+    echo "  ✓ justfile (appended)"
+else
+    cp "$SCRIPT_DIR/justfile" "$TARGET/justfile"
+    echo "  ✓ justfile"
+fi
+
+echo ""
+echo "Done! Next steps:"
+echo "  1. Edit docs/design-docs/core-beliefs.md for your project"
+echo "  2. Add project-specific skills to .agents/skills/"
+echo "  3. Add reference docs to docs/references/"
+echo "  4. Run 'just validate' to check setup"

@@ -1,0 +1,102 @@
+#!/bin/bash
+# Validate - Check Builder framework integrity
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$SCRIPT_DIR"
+
+ERRORS=0
+
+echo "Validating Builder framework..."
+echo ""
+
+# Check required files exist
+echo "Checking required files..."
+required_files=(
+    "AGENTS.md"
+    "docs/design-docs/core-beliefs.md"
+    "docs/design-docs/architecture.md"
+    "docs/design-docs/index.md"
+    "docs/exec-plans/tech-debt-tracker.md"
+)
+
+for file in "${required_files[@]}"; do
+    if [ -f "$file" ]; then
+        echo "  ✓ $file"
+    else
+        echo "  ✗ $file (missing)"
+        ERRORS=$((ERRORS + 1))
+    fi
+done
+
+echo ""
+
+# Check AGENTS.md length
+echo "Checking AGENTS.md length..."
+lines=$(wc -l < AGENTS.md | tr -d ' ')
+if [ "$lines" -gt 150 ]; then
+    echo "  ⚠ AGENTS.md is $lines lines (recommend < 150 for progressive disclosure)"
+else
+    echo "  ✓ AGENTS.md is $lines lines"
+fi
+
+echo ""
+
+# Check skills have SKILL.md
+echo "Checking skills..."
+for skill_dir in .agents/skills/*/; do
+    if [ -d "$skill_dir" ]; then
+        skill_name=$(basename "$skill_dir")
+        if [ -f "$skill_dir/SKILL.md" ]; then
+            # Check for required frontmatter
+            if grep -q "^name:" "$skill_dir/SKILL.md" && grep -q "^description:" "$skill_dir/SKILL.md"; then
+                echo "  ✓ $skill_name"
+            else
+                echo "  ⚠ $skill_name (missing name or description in frontmatter)"
+            fi
+        else
+            echo "  ✗ $skill_name (missing SKILL.md)"
+            ERRORS=$((ERRORS + 1))
+        fi
+    fi
+done
+
+echo ""
+
+# Check for broken markdown links in docs
+echo "Checking documentation links..."
+broken_links=0
+for md_file in $(find docs -name "*.md"); do
+    # Extract relative links and check if files exist
+    links=$(grep -oE '\]\([^)]+\.md\)' "$md_file" 2>/dev/null | sed 's/](\(.*\))/\1/' || true)
+    for link in $links; do
+        # Get directory of the source file
+        dir=$(dirname "$md_file")
+        # Resolve the link relative to the source file
+        target=$(cd "$dir" 2>/dev/null && realpath -m "$link" 2>/dev/null || echo "")
+        if [ -n "$target" ] && [ ! -f "$target" ]; then
+            echo "  ✗ Broken link in $md_file: $link"
+            broken_links=$((broken_links + 1))
+        fi
+    done
+done
+
+if [ "$broken_links" -eq 0 ]; then
+    echo "  ✓ No broken links found"
+else
+    ERRORS=$((ERRORS + broken_links))
+fi
+
+echo ""
+
+# Summary
+if [ "$ERRORS" -gt 0 ]; then
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "Validation failed with $ERRORS error(s)"
+    exit 1
+else
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "Validation passed!"
+    exit 0
+fi
