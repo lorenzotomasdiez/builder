@@ -1,0 +1,121 @@
+{# Tests
+# Jinja - Integration Test (CRUD endpoints)
+
+import pytest
+from httpx import AsyncClient
+from app.main import app
+
+
+@pytest.mark.asyncio
+async def test_list_{{ entity_name_lower }}s_authenticated(client: AsyncClient, auth_headers: dict):
+    response = await client.get("/api/v1/{{ entity_name_lower }}s", headers=auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+
+
+@pytest.mark.asyncio
+async def test_list_{{ entity_name_lower }}s_unauthenticated(client: AsyncClient):
+    response = await client.get("/api/v1/{{ entity_name_lower }}s")
+    {% if AUTH_REQUIRED %}
+    assert response.status_code == 401
+    {% else %}
+    assert response.status_code == 200
+    {% endif %}
+
+
+@pytest.mark.asyncio
+async def test_create_{{ entity_name_lower }}(client: AsyncClient, auth_headers: dict):
+    response = await client.post(
+        "/api/v1/{{ entity_name_lower }}s",
+        headers=auth_headers,
+        json={
+            {% for field in ENTITY_FIELDS %}
+            {% if field.required and field.name != "id" %}
+            "{{ field.name }}": "test_{{ field.name }}",
+            {% endif %}
+            {% endfor %}
+        },
+    )
+    assert response.status_code == 201
+    data = response.json()
+    assert "id" in data
+
+
+@pytest.mark.asyncio
+async def test_get_{{ entity_name_lower }}_by_id(client: AsyncClient, auth_headers: dict):
+    # First create
+    create_response = await client.post(
+        "/api/v1/{{ entity_name_lower }}s",
+        headers=auth_headers,
+        json={
+            {% for field in ENTITY_FIELDS %}
+            {% if field.required and field.name != "id" %}
+            "{{ field.name }}": "test_{{ field.name }}",
+            {% endif %}
+            {% endfor %}
+        },
+    )
+    created = create_response.json()
+    
+    # Then get
+    response = await client.get(f"/api/v1/{{ entity_name_lower }}s/{created['id']}", headers=auth_headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["id"] == created["id"]
+
+
+@pytest.mark.asyncio
+async def test_update_{{ entity_name_lower }}(client: AsyncClient, auth_headers: dict):
+    # First create
+    create_response = await client.post(
+        "/api/v1/{{ entity_name_lower }}s",
+        headers=auth_headers,
+        json={
+            {% for field in ENTITY_FIELDS %}
+            {% if field.required and field.name != "id" %}
+            "{{ field.name }}": "test_{{ field.name }}",
+            {% endif %}
+            {% endfor %}
+        },
+    )
+    created = create_response.json()
+    
+    # Then update
+    response = await client.patch(
+        f"/api/v1/{{ entity_name_lower }}s/{created['id']}",
+        headers=auth_headers,
+        json={
+            {% for field in ENTITY_FIELDS %}
+            {% if not field.required and field.name != "id" %}
+            "{{ field.name }}": "updated_{{ field.name }}",
+            {% endif %}
+            {% endfor %}
+        },
+    )
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_delete_{{ entity_name_lower }}(client: AsyncClient, auth_headers: dict):
+    # First create
+    create_response = await client.post(
+        "/api/v1/{{ entity_name_lower }}s",
+        headers=auth_headers,
+        json={
+            {% for field in ENTITY_FIELDS %}
+            {% if field.required and field.name != "id" %}
+            "{{ field.name }}": "test_{{ field.name }}",
+            {% endif %}
+            {% endfor %}
+        },
+    )
+    created = create_response.json()
+    
+    # Then delete
+    response = await client.delete(f"/api/v1/{{ entity_name_lower }}s/{created['id']}", headers=auth_headers)
+    assert response.status_code == 204
+    
+    # Verify deleted
+    get_response = await client.get(f"/api/v1/{{ entity_name_lower }}s/{created['id']}", headers=auth_headers)
+    assert get_response.status_code == 404

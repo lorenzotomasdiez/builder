@@ -25,7 +25,9 @@ builder/
 │       ├── build-infra-feature-generation.md
 │       └── build-infra-template-variables.md
 ├── templates/             # Scaffolds for new projects
-│   └── infra/             # Infrastructure templates
+│   ├── infra/             # Infrastructure templates
+│   ├── api/               # API templates
+│   └── qa/                # QA user story & command templates
 ├── extensions/            # Pi extensions
 │   └── extensions-examples/  # Reference implementations
 └── lib/                   # Core libraries for Build-Infr
@@ -71,6 +73,24 @@ Located in `.agents/skills/`. Load with your agent's skill system.
 ### References (`docs/references/`)
 - External documentation for grounding responses
 - API docs, framework guides, tool references
+- `bowser/` - Browser automation & QA architecture (4-layer composable stack)
+
+## Workflows
+
+| Workflow | Agents | Purpose |
+|----------|--------|---------|
+| `build-infra` | initializer → planner → builder → tester | Generate infrastructure (Docker, CI/CD, nginx) |
+| `build-api` | initializer → planner → builder → tester | Generate REST API code (TDD) |
+| `build-qa` | bowser-qa-agent, playwright-agent, chrome-agent | Browser-based QA validation of user stories |
+
+### Build-QA (Browser QA)
+Four-layer composable architecture for automated UI testing:
+- **Layer 1 (Capability):** Playwright CLI (headless, parallel) + Chrome MCP (real profile)
+- **Layer 2 (Scale):** QA agents with isolated sessions and structured PASS/FAIL reports
+- **Layer 3 (Orchestration):** ui-review (fan-out stories) + hop-automate (saved workflows)
+- **Layer 4 (Reusability):** Justfile recipes for one-command execution
+
+See `docs/references/bowser/architecture.md` for full details.
 
 ## How Agents Work Here
 

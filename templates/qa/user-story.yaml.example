@@ -1,0 +1,21 @@
+# User Story YAML Template for Bowser QA
+#
+# Place story files in: ai_review/user_stories/
+# Files are auto-discovered by the ui-review orchestrator.
+#
+# Supported workflow step formats:
+#   - Simple: "Click the login button"
+#   - Imperative: "Navigate to /dashboard"
+#   - BDD: "Given I am on the homepage, When I click Login, Then I see the form"
+#   - Narrative: "The user fills in their email and clicks submit"
+#   - Checklist: "- [ ] Verify header is visible"
+
+stories:
+  - name: "Descriptive story name"
+    url: "https://your-app.com/starting-page"
+    workflow: |
+      Navigate to https://your-app.com/starting-page
+      Verify the page loads successfully
+      Verify expected elements are visible
+      Perform user action (click, fill, submit, etc.)
+      Verify the expected outcome

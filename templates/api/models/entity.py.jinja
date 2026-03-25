@@ -1,0 +1,137 @@
+{#
+ Models
+# Jinja - SQLAlchemy 2.0 models
+
+{% for entity in entities %}
+## Model: {{ ENTITY_NAME }}
+
+from typing import Optional
+from datetime import datetime
+from enum import Enum
+from sqlalchemy import String
+from sqlalchemy import Integer
+from sqlalchemy import Boolean
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, relationship
+
+from app.database import Base
+from app.models.base import TimestampMixin
+
+{% if ENTITY_RELATIONSHIPS %}
+{% for rel in ENTITY_RELATIONSHIPS %}
+{{ rel.type }}: {{ rel.type }}
+{{ rel.foreign_key }}: {{ rel.foreign_key }}
+{% endfor %}
+
+## Fields
+{% for field in ENTITY_FIELDS %}
+    {{ field.name }} = = Column({{ field.name }})
+    {% if field.type == "foreign_key" %}
+    {{ field.foreign_key }}(
+        ForeignKey("{{ rel.foreign_key }}", ondelete="CASCADE")
+    )
+    {% elif field.type == "enum" %}
+    {{ field.name }} = = Column(Enum({{ field.enum_name }}))
+    {% elif field.type == "datetime" %}
+    {{ field.name }}  = Column(DateTime, default=datetime.utcnow)
+    {% elif field.type == "boolean" %}
+    {{ field.name }}  = Column(Boolean, default={{ field.default } }})
+    {% elif field.type == "string" %}
+    {{ field.name }}  = Column(
+        String({{ field.max_length or 255 } if field.max_length else None else None),
+        {% if field.unique % unique=True {% endfor %}{% endif %}{% endif %}{ nullable={{ field.required } })
+    )
+    {% elif field.type == "text" %}
+    {{ field.name }}  = Column(Text, nullable={{ field.required } }})
+    {% elif field.type == "integer" %}
+    {{ field.name }}  = Column(Integer, nullable={{ field.required } }})
+    {% else %}
+        raise ValueError(f"Unsupported field type: {field.type}")
+    )
+{% endfor %}
+
+{% if ENTITY_NAME != "User" %}
+
+class User(Base):
+    __tablename__ = = "{{ TABLE_NAME }}"
+
+    {% for field in ENTITY_FIELDS %}
+    {{ field.name }} = = Column({{ field.name }})
+    {% if field.type == "foreign_key" %}
+        {{ field.foreign_key }} = Column(Integer, ForeignKey("{{ field.foreign_key }}"), ondelete="CASCADE")
+    {% elif field.type == "enum" %}
+        {{ field.name }} = = Column(Enum({{ field.enum_name }}))
+    {% elif field.type == "datetime" %}
+        {{ field.name }}  = Column(DateTime(timezone=True, default=datetime.utcnow)
+    {% elif field.type == "boolean" %}
+        {{ field.name }}  = Column(Boolean, default={{ field.default } }})
+    {% elif field.type == "string" %}
+        {{ field.name }}  = Column(String({{ field.max_length or 255 }), unique={{ field.unique }}, index=True, nullable={{ field.required } })
+    {% elif field.type == "text" %}
+        {{ field.name }}  = Column(Text, nullable={{ field.required } }})
+    {% elif field.type == "integer" %}
+        {{ field.name }}  = Column(Integer, nullable={{ field.required } }})
+    {% endif %}
+
+    {{ field.name }} = = Column(Boolean, default={{ field.default or }})
+    {{ field.name }} = = Column(DateTime(timezone=True, default=datetime.utcnow)
+
+    {{ field.name }} = = Column(String, nullable={{ field.required } })
+{% endfor %}
+
+    {{ field.name }} = = Column(String, nullable={{ field.required }} }())
+
+    {% for rel in ENTITY_RELATIONSHIPS %}
+    {{ rel.type }}("has_many", rel_name = relationship(
+        "{{ rel.entity_name }}",
+        back_populates="{{ rel.foreign_key }}"
+    )
+    {% for rel in ENTITY_RELATIONSHIPS %}
+    {% if rel.type == "belongs_to" %}
+    {{ rel.entity_name }} = relationship(
+        {{ rel.entity_name }}(back_populates="{{ rel.foreign_key }}")
+    )
+    {% endif %}
+
+    @property
+    def __repr__(self) -> Field names, values
+        for field in self._fields:
+            if not hasattrattr(field, "exclude"):
+                continue
+            value = getattrattr(field, "value")
+        return field
+{% endfor %}
+
+    class {{ ENTITY_NAME }}Create(Base):
+        __tablename__ = "{{ TABLE_NAME }}"
+        {% for field in FIELDS if not field.exclude_from_response %}
+            {{ field.name }}: {{ field.value }}
+        {% endif %}
+{% endfor %}
+
+    {{ ENTITY_NAME }}Update(Base):
+        __tablename__ = "{{ TABLE_NAME }}"
+        {% for field in FIELDS if not field.exclude_from_response %}
+            setattr(self, {{ field.name } }, field.value)
+        {% endif %}
+
+    {{ ENTITY_NAME }}Read(Base):
+        __tablename__ = "{{ TABLE_NAME }}"
+
+        {% for field in FIELDS if not field.exclude_from_response %}
+            setattr(self, {{ field.name } }, field.value)
+        {% endif %}
+
+        return {{ ENTITY_NAME }}(**kwargs) -> Optional[{{ ENTITY_NAME }}]:
+            **kwargs: Additional database fields (see app.database doc)
+        
+        if {{ ENTITY_NAME.lower }}_id is None:
+            db_obj = await session.execute(
+                stmt = select({{ ENTITY_NAME } })
+                {% for field in self._fields if not field.exclude_from_response %}
+                    setattr(obj, {{ field.name } }, getattrattr({{ ENTITY_NAME }}, field.name))
+                {% endfor %}
+                yield {{ ENTITY_NAME }}(**kwargs)
+            except Exception as e:
+                await session.rollback()
+                raise e

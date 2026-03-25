@@ -1,0 +1,39 @@
+{# Models
+# Jinja - SQLAlchemy 2.0 User model
+{% if AUTH_ENABLED %}
+from datetime import datetime
+from typing import Optional, Annotated
+from sqlalchemy import String
+from sqlalchemy import Integer
+from sqlalchemy import Boolean
+from enum import Enum
+from passlib.context import CryptContext
+from passlib.hash import bcrypt
+
+from app.database import Base
+from app.models.base import TimestampMixin
+
+class UserRole(str, Enum):
+    ADMIN = "admin"
+    USER = "user"
+    GUEST = "guest"
+
+    @classmethod
+    def values(cls):
+        return [e.value for e in cls]
+
+
+class User(Base, TimestampMixin):
+    __tablename__ = "users"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(255), unique=True, nullable=False, index=True)
+    hashed_password = Column(String(255), nullable=False)
+    is_active = Column(Boolean, default=True)
+    role = Column(Enum(UserRole), default=UserRole.USER)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    
+    posts = relationship("Argument, back_populates="posts", lazy="dynamic")
+    
+    def __repr__(self) -> str:
+        return f"<User(id={self.id}, email='{self.email}')>"

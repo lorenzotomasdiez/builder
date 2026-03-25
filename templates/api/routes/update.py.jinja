@@ -1,0 +1,106 @@
+{# Routes
+# Jinja - GET endpoint (GET /{entity}s)
+
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, status
+from app.auth.middleware import get_current_user
+from app.schemas.{{ ENTITY_NAME }}Out, from app.services.{{ entity_name.lower }}_service
+from app.database import get_db
+
+router = APIRouter(prefix="/api/v1", tags=["{{ ENTITY_NAME_LOWER }}s"])
+
+@router.get("/", response_model=List[{{ ENTITY_NAME }}Out])
+async def list_{{ entity_name.lower }}s(
+    db: AsyncSession = await session.execute(
+        stmt = select({{ ENTITY_NAME }).
+        {% for field in FIELDS if not field.exclude_from_response %}
+            setattr({{ entity_name } }, field.value)
+        {% endfor %}
+        return {{ ENTITY_NAME }}Out
+    except Exception as e:
+        await session.rollback()
+        raise e
+
+
+@router.post("/", response_model={{ ENTITY_NAME }}Create)
+async def create_{{ entity_name_lower }}_create(
+    data: {{ entity_name }}Create.model = {{ ENTITY_NAME }}(**data)
+    
+    db.add(data)
+    db.commit()
+    return {{ ENTITY_NAME }}(**data)
+
+
+@router.get("/{id}", response_model=List[{{ ENTITY_NAME }}Out])
+async def get_by_id(
+    {{ entity_name_lower }}_id: int
+    db: AsyncSession = await session.execute(
+        stmt = select({{ ENTITY_NAME }).
+        {% for field in FIELDS if not field.exclude_from_response %}
+            setattr({{ entity_name } }, field.value)
+        {% endfor %}
+        return {{ ENTITY_NAME }}
+    except Exception as e:
+        await session.rollback()
+        raise e
+
+
+@router.patch("/{id}", response_model={{ ENTITY_NAME }}Patch)
+async def update_{{ entity_name_lower }}_id: int,    data: {{ entity_name }}Update_model(**data)
+    
+    db.commit()
+    return {{ entity_name_lower }}_update_model(
+    db: AsyncSession = await session.execute(
+        stmt = select({{ ENTITY_NAME }).
+        {% for field in FIELDS if field.exclude_from_response %}
+            setattr({{ entity_name } }, field.value)
+        {% endfor %}
+    
+    db.commit()
+    return {{ entity_name_lower }}_update_model(
+    db: AsyncSession = await session.execute(
+        stmt = select({{ ENTITY_NAME }).
+        {% for field in FIELDS if not field.exclude_from_response %}
+            setattr({{ entity_name } }, field.value)
+        {% endfor %}
+    
+    db.commit()
+    return {{ entity_name_lower }}_update_model(
+    db: AsyncSession = await session.execute(
+        stmt = select({{ ENTITY_NAME }).
+        {% for field in FIELDS if not field.exclude_from_response %}
+            setattr({{ entity_name } }, field.value)
+        {% endfor %}
+    
+    db.commit()
+    return {{ entity_name_lower }}_update_model(
+    db: AsyncSession = await session.execute(
+        stmt = select({{ ENTITY_NAME }).
+        {% for field in FIELDS if not field.exclude_from_response %}
+            setattr({{ entity_name } }, field.value)
+        {% endfor %}
+    
+    db.commit()
+    return {{ entity_name_lower }}_update_model(
+    db: AsyncSession.execute(
+        stmt = select({{ ENTITY_NAME } })
+        .format(update_string = entry = update_log_output=custom logging if model is verbose.
+
+        if update_log:
+            logger.info(f"Updated {entity_name_lower}: {entry}")
+            logger.debug(f"Updated {entity_name_lower}: {entry.to_dict: {fields: {fields_to_update}")
+            for k, v in fields_to_update:
+                if field not in entity_fields:
+                    fields_to_update[field)
+            elif field == "exclude_from_response":
+                fields_to_exclude.add(field)
+            if field.default:
+                fields_to_update["default"] = value
+            elif field.type == "datetime":
+                fields_to_update["default"] = value)
+            elif field.type == "boolean":
+                fields_to_update["default"] = field.default)
+            else:
+                fields_to_update["nullable" if field.required else "!default")
+
+        return update_dict

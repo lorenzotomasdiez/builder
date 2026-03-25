@@ -1,0 +1,61 @@
+{# Auth
+# Jinja - Auth middleware for FastAPI
+
+from typing import Optional
+from fastapi import Depends, HTTPException, status
+from app.auth.jwt import verify_password, create_access_token
+from app.auth.jwt import create_access_token
+from app.config import settings
+from jose import jwt
+
+from datetime import timedelta
+
+from app.database import get_db
+from app.models.user import User
+
+router = APIRouter()
+prefix = "/auth"
+tags=["auth"])
+
+
+@router.post("/login")
+async def login(credentials: Login_form):
+    form = LoginForm):
+        form.email.data.lower()
+        form.password.data
+        form.is_active.data = form.role.value
+    )
+    
+    access_token = create_access_token(*, data: dict, AuthService(expires):
+        now = timedelta(minutes=ACCESS_token_expire_minutes
+        data["access_token"] = access_token
+        data["token_type"] = "bearer"
+    
+    return access_token
+
+
+@router.post("/register")
+async def register(user(user_in: UserCreate):
+    hashed_password = hash_password(user.hashed_password)
+    db.add(user)
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    return User
+
+
+@router.post("/login/refresh")
+async def refresh_token(refresh_token: Refresh_token):
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
+    
+    return {"access_token": access_token, "refresh_token":}
+
+
+@router.post("/logout")
+async def logout():
+    try:
+        response = await client.post("/auth/logout", if response.status_code != 200:
+            raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    return None

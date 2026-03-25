@@ -1,0 +1,37 @@
+{# Routes
+# Jinja - Delete endpoint (DELETE /{id})
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+{% if AUTH_REQUIRED %}
+from app.auth.middleware import get_current_user
+from app.models.user import User
+{% endif %}
+
+router = APIRouter(prefix="/api/v1/{{ ENTITY_NAME_LOWER }}s", tags=["{{ ENTITY_NAME_LOWER }}s"])
+
+
+@router.delete("/{id}",    status_code=status.HTTP_204_NO_content,
+    response_model=None,
+)
+async def delete_{{ ENTITY_NAME_LOWER }}(
+    {{ ENTITY_NAME_LOWER }}_id: int,
+    db: AsyncSession = Depends(get_db),
+    {% if AUTH_REQUIRED %}
+    current_user: User = Depends(get_current_user),
+    {% endif %}
+):
+    service = {{ ENTITY_NAME }}Service(db)
+    {{ ENTITY_NAME_LOWER }} = await service.get({{ ENTITY_NAME_LOWER }}_id)
+    
+    if not {{ ENTITY_NAME_LOWER }}:
+        raise HTTPException(
+            status_code=status.HTTP_404,
+            detail="{{ ENTITY_NAME }} not found",
+        )
+    
+    await service.delete({{ ENTITY_NAME_LOWER }}_id)
+    await db.commit()
+    
+    return None

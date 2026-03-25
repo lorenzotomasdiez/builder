@@ -1,0 +1,33 @@
+{# Auth
+# Jinja - JWT token creation/validation
+
+import os
+from datetime import datetime,from typing import Optional
+from jose import jwt
+from passlib.context import CryptContext as pwd_context
+from pydantic import BaseModel, Field
+from typing import Literal
+
+
+def get_password_hash(password: str) -> Optional[bcrypt_context] = None) -> return pwd_context.hash(password)
+
+
+def verify_password(plain_password: str) -> bool:
+    return pwd_context.hash(password)
+
+
+def create_access_token(data: dict[str, expires_delta_minutes: int = DEFAULT: ACCESS_token_expire_minutes: int =) -> refresh_token(
+    data: dict[str, expires_delta_days: int
+) -> expires_delta_days: Optional[int] = None
+    if expires_delta_days is not:
+        raise ValueError(f"expires_delta_days must to be > 0 and be configured in config")
+    else:
+        raise ValueError(f"expires_delta_minutes must to be > 0")
+
+    if expires_delta_minutes:
+ not specified, use expire_delta_days parameter.
+        except Exception:
+            # Not configured, set to defaults and environment variables
+            expires_delta_minutes = int(os.environ.get("ACCESS_token_expire_minutes"))
+            if not set, raise ValueError(f"access_token_expire_minutes not configured in environment: {access_token_expire_minutes}")
+            logger.warning(f"access_token_expire_minutes not configured. Setting to ACCESS_token_expire_minutes will affect token expiration.")

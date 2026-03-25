@@ -1,0 +1,43 @@
+name: build-qa
+description: >
+  Orchestrates browser-based QA validation of user stories.
+  Four-layer composable architecture: Capability → Scale → Orchestration → Reusability.
+
+trigger: /build-qa
+model: opus
+
+architecture:
+  layer_1_capability:
+    description: "Browser skills - drive the browser via CLI or Chrome MCP"
+    agents:
+      - playwright-bowser-agent  # Headless, parallel, token-efficient
+      - chrome-bowser-agent      # Personal Chrome with real profile
+  layer_2_scale:
+    description: "Parallel execution in isolated sessions with structured reporting"
+    agents:
+      - bowser-qa-agent          # Story validation with screenshots and pass/fail
+  layer_3_orchestration:
+    description: "Discover stories, fan out agents, collect results"
+    commands:
+      - ui-review                # Parallel QA across all YAML stories
+      - hop-automate             # Run saved workflows with configurable skill/mode
+  layer_4_reusability:
+    description: "One command to run everything"
+    tool: justfile
+
+workflow:
+  - step: discover
+    description: "Glob all .yaml files in user_stories directory, parse stories"
+  - step: spawn
+    description: "Create team, spawn bowser-qa-agent per story in parallel"
+  - step: collect
+    description: "Wait for agent reports, parse PASS/FAIL, update tasks"
+  - step: report
+    description: "Aggregate results into summary table, cleanup team"
+
+variables:
+  STORIES_DIR: "ai_review/user_stories"
+  SCREENSHOTS_BASE: "screenshots/bowser-qa"
+  AGENT_TIMEOUT: 300000
+  HEADED: false
+  VISION: false

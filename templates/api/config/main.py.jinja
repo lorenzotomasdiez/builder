@@ -1,0 +1,41 @@
+{# Config
+# Jinja - FastAPI main app
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from app.config import settings
+from app.database import engine, Base
+from app.routes import auth, {{ entity_name_lower }}s
+
+app = FastAPI(
+    title="{{ PROJECT_NAME }} API",
+    debug=settings.DEBUG,
+)
+
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.BACKEND_CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# Health check
+@app.get("/health")
+async def health():
+    return {"status": "healthy"}
+
+
+# Include routers
+app.include_router(auth.router)
+{% for entity in entities %}
+app.include_router({{ entity.name.lower }}s.router)
+{% endfor %}
+
+
+@app.on_event("startup")
+async def startup_event():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)

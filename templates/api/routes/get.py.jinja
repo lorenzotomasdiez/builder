@@ -1,0 +1,49 @@
+{# Routes
+# Jinja - Get endpoint (GET /{id})
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.database import get_db
+{% if AUTH_REQUIRED %}
+from app.auth.middleware import get_current_user
+from app.models.user import User
+{% endif %}
+from app.schemas.{{ ENTITY_NAME_LOWER }} import {{ ENTITY_NAME }}Out
+from app.services.{{ ENTITY_NAME_LOWER }}_service import {{ ENTITY_NAME }}Service
+
+from app.models.{{ ENTITY_NAME_LOWER }} import {{ ENTITY_NAME }}
+
+router = APIRouter(prefix="/api/v1/{{ ENTITY_NAME_LOWER }}s", tags=["{{ ENTITY_NAME_LOWER }}s"])
+
+
+@router.get("/{id}", response_model={{ ENTITY_NAME }}Out)
+async def get_{{ ENTITY_NAME_LOWER }}(
+    {{ ENTITY_NAME_LOWER }}_id: int,
+    db: AsyncSession = Depends(get_db),
+    {% if AUTH_REQUIRED %}
+    current_user: User = Depends(get_current_user),
+    {% endif %}
+):
+    service = {{ ENTITY_NAME }}Service(db)
+    {{ ENTITY_NAME_LOWER }} = await service.get({{ ENTITY_NAME_LOWER }}_id)
+    
+    if not {{ ENTITY_NAME_LOWER }}:
+        raise HTTPException(
+            status_code=status.HTTP_404,
+            detail="{{ ENTITY_NAME }} not found",
+        )
+    
+    return {{ ENTITY_NAME_LOWER }}
+{% endif %}
+    
+    service = {{ ENTITY_NAME }}Service(db)
+    {{ ENTITY_NAME_LOWER }} = await service.get({{ ENTITY_NAME_LOWER }}_id)
+    
+    if not {{ ENTITY_NAME_LOWER }}:
+        raise HTTPException(
+            status_code=status.HTTP_404,
+            detail="{{ ENTITY_NAME }} not found",
+        )
+    
+    return {{ ENTITY_NAME_LOWER }}

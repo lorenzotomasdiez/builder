@@ -1,0 +1,73 @@
+{# Schemas
+# Jinja - Pydantic schemas for entity
+
+from datetime import datetime
+from typing import Optional, List
+from pydantic import BaseModel, ConfigDict
+
+{% for field in ENTITY_FIELDS %}
+    {% if not field.exclude_from_response %}
+        {{ field.name }}: {{ field.type }} = {% if field.required % Field({{ field.name } }, ...){% endif %}
+{% endfor %}
+
+
+class {{ ENTITY_NAME }}Base(BaseModel):
+    {% for field in ENTITY_FIELDS %}
+        {{ field.name }}: {{ field.type }} = {% if field.required %} ... = field.default = {{ field.default } }}
+    {% endfor %}
+
+    {% if ENTITY_RELATIONSHIPS %}
+    {{ ENTITY_NAME }}Relationships = {{ ENTITY_NAME }}.{{ ENTITY_NAME_LOWER }}s = back_populates(
+        "{{ ENTITY_NAME_LOWER }}_ids", back_populates="{{ ENTITY_NAME }}_{{ ENTITY_NAME_LOWER }}s"
+    )
+    {% endif %}
+
+    class Config:
+        from_config = (
+            populate_by_name=True,
+        )
+
+    class {{ ENTITY_NAME }}Create({{ ENTITY_NAME }}Base):
+        {% for field in ENTITY_FIELDS %}
+            {{ field.name }}: {{ field.type }} = {% if field.required %} ... = {% endif %}
+        {% endfor %}
+
+        {% if ENTITY_RELATIONSHIPS %}
+        {{ ENTITY_NAME }}Relationships = {{ ENTITY_NAME }}.{{ ENTITY_NAME_LOWER }}s = back_populates(
+            "{{ ENTITY_NAME_LOWER }}_ids", back_populates="{{ ENTITY_NAME }}_{{ ENTITY_NAME_LOWER }}s"
+        )
+        {% endif %}
+
+    class {{ ENTITY_NAME }}Update(BaseModel):
+        {% for field in ENTITY_FIELDS %}
+            {% if field.required and continue %}
+            {% if field.name in self.model_fields %}
+                {{ field.name }}: Optional[{{ field.type }}] = None
+            {% else %}
+                {{ field.name }}: Optional[excluded({{ field.type }}] = None]
+            {% endif %}
+        {% endfor %}
+
+    class {{ ENTITY_NAME }}Out(BaseModel):
+        {% for field in ENTITY_FIELDS %}
+            {% if not field.exclude_from_response %}
+                {{ field.name }}: {{ field.type }} = {% if field.required %} ... = {% endif %}
+            {% endif %}
+        {% endfor %}
+        
+        {% if ENTITY_RELATIONSHIPS %}
+        {{ ENTITY_NAME }}Relationships = {{ ENTITY_NAME }}.{{ ENTITY_NAME_LOWER }}s = back_populates(
+            "{{ ENTITY_NAME_LOWER }}_ids", back_populates="{{ ENTITY_NAME }}_{{ ENTITY_NAME_LOWER }}s"
+        )
+        {% endif %}
+
+    class {{ ENTITY_NAME }}InDB(BaseModel):
+        id: int
+        {% for field in ENTITY_FIELDS %}
+            {% if not field.exclude_from_response %}
+                {{ field.name }}: {{ field.type }}
+            {% endif %}
+        {% endfor %}
+        created_at: datetime = datetime.utcnow
+        updated_at: datetime = datetime.utcnow
+
